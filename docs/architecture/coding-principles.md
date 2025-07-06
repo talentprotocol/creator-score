@@ -9,19 +9,22 @@
 - **Shared Utilities:** All user lookups and profile loads go through a single resolver that abstracts away the identifier type (Farcaster, GitHub, wallet, Talent UUID). Common logic is extracted into shared services for maintainability and testability.
 - **Leaderboard UX:** The current user is always pinned to the top of the leaderboard. Special badges (e.g., "New Builder", "Hall of Fame") can be used to highlight user status and achievements.
 - **Advanced Search Callout:** The search page includes a blue callout for advanced search, linking to Talent Index.
-- **Profile Modal:** Viewing another user's profile (from Search or Leaderboard) opens a modal overlay (draggable bottom sheet on mobile, side sheet on desktop) rather than navigating away from the current context.
 - **Documentation:** All unique or opinionated decisions are documented for clarity; best practices are referenced but not over-explained.
+// - **Profile Modal:** Viewing another user's profile (from Search or Leaderboard) opens a modal overlay (bottom sheet on mobile, dialog on desktop) rather than navigating away from the current context.
 
 ## DESIGN PRINCIPLES
 
 - **Navigation:** Mobile-first with a fixed top header and bottom navigation bar. 
-- **Modals:** All secondary flows (menus, about, eligibility, score breakdown, profile overlays, etc.) are implemented as draggable bottom sheets on mobile, always featuring a small horizontal drag handle at the top center. On desktop, these become side sheets or modal dialogs.
+- **Modals:** All secondary flows (menus, about, eligibility, score breakdown, profile overlays, etc.) are implemented responsively: draggable bottom sheets on mobile (with drag handle), centered dialogs on desktop (sm+ breakpoint).
 - **Color System:** We use a minimal, neutral palette with a single vibrant accent color, applied sparingly and strategically for clarity and focus.
 - **Typographic Hierarchy:** Typography follows a clear, documented scale for all text elements, ensuring visual consistency and fast building.
 - **Mobile:** The mobile experience is the primary focus, with all layouts and interactions optimized for touch and small screens.
-- **Desktop:** The desktop experience is a minimal adaptation: content is centered with max width, bottom nav is hidden, and modals become dialogs or side sheets.
+- **Desktop:** The desktop experience is a minimal adaptation: content is centered with max width, bottom nav is hidden, and modals become centered dialogs.
+- **Responsive Modals:** All modals detect screen size (640px breakpoint) and render as bottom sheets on mobile or dialogs on desktop automatically.
 - **Show More/Less:** Long text (e.g., AI summaries) is truncated with a toggle for expanding/collapsing content.
 - **Progress Bars:** Progress bars are used throughout the app to visualize activity, scores, and reward progress, and are always minimal and thin.
+- **Notifications & Feedback Patterns:** Prefer inline status feedback and educational modals over disruptive toast notifications. Show contextual information directly near relevant elements, use bottom sheets for comprehensive guidance.
+- **User Education:** When users complete complex actions (like logout), provide educational content about system behavior rather than hiding complexity behind simple confirmations.
 
 ## TECHNICAL ARCHITECTURE
 

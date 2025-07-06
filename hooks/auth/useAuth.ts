@@ -4,9 +4,20 @@ import { useState, useEffect, useCallback } from "react";
 import type { AuthState, User, AuthProvider, AuthContext } from "@/lib/types";
 import { env } from "@/lib/config";
 import { ContextDetector } from "@/lib/auth";
+import { usePrivyAuth } from "@/lib/auth/providers/PrivyProvider";
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
+  // Get Privy auth state (only available when wrapped in PrivyProvider)
+  let privyAuth: ReturnType<typeof usePrivyAuth> | null = null;
+  try {
+    // This will only work when component is wrapped in PrivyProvider
+    privyAuth = usePrivyAuth();
+  } catch {
+    // Not in Privy context, will use dev mode or fallback
+    privyAuth = null;
+  }
+
+  const [devAuthState, setDevAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
     provider: null,
@@ -22,10 +33,10 @@ export function useAuth() {
   const authenticate = useCallback(
     async (provider: AuthProvider, userData?: Partial<User>) => {
       try {
-        setAuthState((prev) => ({ ...prev, loading: true, error: null }));
-
-        // Development mode bypass
+        // In dev mode, use mock authentication
         if (env.NEXT_PUBLIC_DEV_MODE) {
+          setDevAuthState((prev) => ({ ...prev, loading: true, error: null }));
+
           const devUser: User = {
             id: "dev-user-123",
             walletAddress: "0x1234567890123456789012345678901234567890",
@@ -34,7 +45,7 @@ export function useAuth() {
             authProvider: provider,
           };
 
-          setAuthState({
+          setDevAuthState({
             isAuthenticated: true,
             user: devUser,
             provider,
@@ -45,7 +56,13 @@ export function useAuth() {
           return;
         }
 
-        // Real authentication logic would go here
+        // In production with Privy provider, use Privy's login
+        if (privyAuth && provider === "privy") {
+          privyAuth.login();
+          return;
+        }
+
+        // Fallback for other cases
         const user: User = {
           id: userData?.id || "user-123",
           walletAddress: userData?.walletAddress,
@@ -54,7 +71,7 @@ export function useAuth() {
           authProvider: provider,
         };
 
-        setAuthState({
+        setDevAuthState({
           isAuthenticated: true,
           user,
           provider,
@@ -63,19 +80,43 @@ export function useAuth() {
           error: null,
         });
       } catch (error) {
-        setAuthState((prev) => ({
-          ...prev,
-          loading: false,
-          error:
-            error instanceof Error ? error.message : "Authentication failed",
-        }));
+        const errorMessage =
+          error instanceof Error ? error.message : "Authentication failed";
+
+        if (env.NEXT_PUBLIC_DEV_MODE) {
+          setDevAuthState((prev) => ({
+            ...prev,
+            loading: false,
+            error: errorMessage,
+          }));
+        }
       }
     },
-    [detectContext]
+    [detectContext, privyAuth]
   );
 
   const logout = useCallback(() => {
-    setAuthState({
+    // In dev mode, update local state
+    if (env.NEXT_PUBLIC_DEV_MODE) {
+      setDevAuthState({
+        isAuthenticated: false,
+        user: null,
+        provider: null,
+        context: detectContext(),
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
+    // In production with Privy, use Privy's logout
+    if (privyAuth) {
+      privyAuth.logout();
+      return;
+    }
+
+    // Fallback
+    setDevAuthState({
       isAuthenticated: false,
       user: null,
       provider: null,
@@ -83,7 +124,7 @@ export function useAuth() {
       loading: false,
       error: null,
     });
-  }, [detectContext]);
+  }, [detectContext, privyAuth]);
 
   useEffect(() => {
     // Initialize auth state
@@ -99,7 +140,7 @@ export function useAuth() {
         authProvider: "privy",
       };
 
-      setAuthState({
+      setDevAuthState({
         isAuthenticated: true,
         user: devUser,
         provider: "privy",
@@ -108,12 +149,31 @@ export function useAuth() {
         error: null,
       });
     } else {
-      setAuthState((prev) => ({ ...prev, context, loading: false }));
+      setDevAuthState((prev) => ({ ...prev, context, loading: false }));
     }
   }, [detectContext]);
 
+  // Return appropriate auth state based on mode
+  if (env.NEXT_PUBLIC_DEV_MODE) {
+    return {
+      ...devAuthState,
+      authenticate,
+      logout,
+    };
+  }
+
+  // In production, use Privy state if available
+  if (privyAuth) {
+    return {
+      ...privyAuth,
+      authenticate,
+      logout,
+    };
+  }
+
+  // Fallback state
   return {
-    ...authState,
+    ...devAuthState,
     authenticate,
     logout,
   };

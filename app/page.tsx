@@ -1,4 +1,4 @@
-import { SimpleAuthTest } from "@/components/auth/SimpleAuthTest";
+import { UnifiedAuthTest } from "@/components/auth/UnifiedAuthTest";
 
 export default function HomePage() {
   return (
@@ -8,11 +8,11 @@ export default function HomePage() {
           <div className="text-center space-y-4">
             <h1 className="text-3xl font-bold">Creator Score</h1>
             <p className="text-muted-foreground">
-              Authentication Test - Browser vs Farcaster Miniapp
+              Fast, minimal, scalable Next.js app with dual authentication
             </p>
           </div>
 
-          <SimpleAuthTest />
+          <UnifiedAuthTest />
         </div>
       </div>
     </main>
