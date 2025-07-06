@@ -47,7 +47,7 @@ export function UnifiedAuthTest() {
       case "browser":
         return "Real Privy wallet authentication via browser";
       case "farcaster_miniapp":
-        return "Frame-based authentication for Farcaster users";
+        return "Mini app-based authentication for Farcaster users";
       default:
         return "Context detection in progress";
     }
