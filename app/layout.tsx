@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { generateFrameMetaTags, generateOpenGraphConfig } from "@/lib/config";
+import { generateMiniAppMetaTags, generateOpenGraphConfig } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description:
     "Fast, minimal, scalable Next.js app with dual authentication and Talent Protocol integration",
   openGraph: generateOpenGraphConfig(),
-  other: generateFrameMetaTags(),
+  other: generateMiniAppMetaTags(),
 };
 
 export default function RootLayout({

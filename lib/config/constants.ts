@@ -14,8 +14,8 @@ export const AUTH_PROVIDERS = {
   FARCASTER: "farcaster",
 } as const;
 
-// Farcaster Frame Configuration
-export const FARCASTER_FRAME = {
+// Farcaster Mini App Configuration
+export const FARCASTER_MINIAPP = {
   version: "vNext",
   image: {
     url: "https://new.creatorscore.app/images/miniapp/hero.png",
@@ -42,6 +42,6 @@ export const OPEN_GRAPH = {
   title: "Creator Score",
   description:
     "Fast, minimal, scalable Next.js app with dual authentication and Talent Protocol integration",
-  image: FARCASTER_FRAME.image,
+  image: FARCASTER_MINIAPP.image,
   type: "website",
 } as const;

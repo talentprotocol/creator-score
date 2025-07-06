@@ -2,20 +2,20 @@ export * from "./env";
 export * from "./constants";
 export * from "./features";
 
-// Utility to generate Farcaster frame meta tags
-import { FARCASTER_FRAME, OPEN_GRAPH } from "./constants";
+// Utility to generate Farcaster mini app meta tags
+import { FARCASTER_MINIAPP, OPEN_GRAPH } from "./constants";
 
-export function generateFrameMetaTags(): Record<string, string> {
+export function generateMiniAppMetaTags(): Record<string, string> {
   const metaTags: Record<string, string> = {
-    // Farcaster Frame Meta Tags
-    "fc:frame": FARCASTER_FRAME.version,
-    "fc:frame:image": FARCASTER_FRAME.image.url,
+    // Farcaster Mini App Meta Tags (using fc:frame for compatibility)
+    "fc:frame": FARCASTER_MINIAPP.version,
+    "fc:frame:image": FARCASTER_MINIAPP.image.url,
     // XMTP Support
-    "of:accepts:xmtp": FARCASTER_FRAME.xmtp.version,
+    "of:accepts:xmtp": FARCASTER_MINIAPP.xmtp.version,
   };
 
   // Add buttons dynamically
-  FARCASTER_FRAME.buttons.forEach((button, index) => {
+  FARCASTER_MINIAPP.buttons.forEach((button, index) => {
     const buttonNum = index + 1;
     metaTags[`fc:frame:button:${buttonNum}`] = button.text;
     metaTags[`fc:frame:button:${buttonNum}:action`] = button.action;
