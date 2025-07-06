@@ -8,8 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-  DialogHeader,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 

@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@farcaster/frame-sdk": "^0.0.64",
+    "@farcaster/miniapp-sdk": "^0.1.4",
     "@privy-io/react-auth": "^2.17.3",
     "@privy-io/wagmi": "^1.0.5",
     "@radix-ui/react-dialog": "^1.1.14",

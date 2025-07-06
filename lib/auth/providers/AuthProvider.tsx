@@ -16,10 +16,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isDetecting, setIsDetecting] = useState(true);
 
   useEffect(() => {
-    // Detect authentication context on the client side
-    const detected = ContextDetector.detectFromClient();
-    setAuthContext(detected);
-    setIsDetecting(false);
+    async function detectAuthContext() {
+      try {
+        // Detect authentication context on the client side
+        const detected = await ContextDetector.detectFromClient();
+        setAuthContext(detected);
+      } catch (error) {
+        console.error("Failed to detect auth context:", error);
+        // Fallback to browser context
+        setAuthContext("browser");
+      } finally {
+        setIsDetecting(false);
+      }
+    }
+
+    detectAuthContext();
   }, []);
 
   if (isDetecting) {

@@ -15,8 +15,14 @@ export class AuthService {
   }
 
   private static isFrameRequest(headers: Headers, userAgent: string): boolean {
-    // Check for Farcaster-specific headers or user agent patterns
-    const farcasterHeaders = ["x-farcaster-frame", "x-frame-context"];
+    // Check for Farcaster-specific headers
+    const farcasterHeaders = [
+      "x-farcaster-frame",
+      "x-frame-context",
+      "x-farcaster-miniapp",
+      "x-farcaster-user",
+      "x-farcaster-signature",
+    ];
 
     // Check for frame-specific headers
     for (const header of farcasterHeaders) {
@@ -38,16 +44,50 @@ export class AuthService {
     fid?: number;
     username?: string;
     walletAddress?: string;
+    signature?: string;
+    timestamp?: number;
   } {
     // Extract Farcaster-specific data from headers when in frame context
     const fidHeader = headers.get("x-farcaster-fid");
     const usernameHeader = headers.get("x-farcaster-username");
     const walletHeader = headers.get("x-farcaster-wallet");
+    const signatureHeader = headers.get("x-farcaster-signature");
+    const timestampHeader = headers.get("x-farcaster-timestamp");
 
     return {
       fid: fidHeader ? parseInt(fidHeader, 10) : undefined,
       username: usernameHeader || undefined,
       walletAddress: walletHeader || undefined,
+      signature: signatureHeader || undefined,
+      timestamp: timestampHeader ? parseInt(timestampHeader, 10) : undefined,
     };
+  }
+
+  /**
+   * Validate a frame signature packet
+   * This would typically validate against Farcaster Hub
+   */
+  static async validateFrameSignature(
+    messageBytes: string,
+    signature: string
+  ): Promise<{ isValid: boolean; error?: string }> {
+    try {
+      // TODO: Implement actual validation against Farcaster Hub
+      // This is a placeholder for the actual validation logic
+      console.log("Validating frame signature:", { messageBytes, signature });
+
+      // For now, return true if both messageBytes and signature exist
+      const isValid = !!(messageBytes && signature);
+
+      return {
+        isValid,
+        error: isValid ? undefined : "Invalid signature or missing data",
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        error: error instanceof Error ? error.message : "Validation failed",
+      };
+    }
   }
 }

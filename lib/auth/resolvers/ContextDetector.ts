@@ -17,11 +17,33 @@ export class ContextDetector {
     return "browser";
   }
 
-  static detectFromClient(): AuthContext {
+  static async detectFromClient(): Promise<AuthContext> {
     if (typeof window === "undefined") {
       return "browser";
     }
 
+    try {
+      // Dynamically import SDK to avoid server-side import issues
+      const { sdk } = await import("@farcaster/miniapp-sdk");
+
+      // Use the official Farcaster SDK to detect mini app context
+      await sdk.actions.ready();
+      const context = await sdk.context;
+
+      // If we have a valid context with user data, we're in a mini app
+      if (context && context.user) {
+        return "farcaster_miniapp";
+      }
+    } catch (error) {
+      // SDK failed to initialize or no context available
+      console.log("Not in Farcaster miniapp context:", error);
+    }
+
+    // Fallback to heuristic detection for compatibility
+    return this.fallbackDetection();
+  }
+
+  private static fallbackDetection(): AuthContext {
     // Check if running in iframe/frame context
     const isInFrame =
       window.parent !== window || window.location !== window.parent.location;

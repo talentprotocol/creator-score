@@ -27,39 +27,31 @@ export function UnifiedAuthTest() {
 
   const [showDisconnectionGuide, setShowDisconnectionGuide] = useState(false);
 
-  // Determine the auth context and mode
-  const getContextInfo = () => {
+  // Determine the current active context
+  const getCurrentContext = () => {
+    if (env.NEXT_PUBLIC_DEV_MODE) return "dev";
+    if (context === "farcaster_miniapp") return "miniapp";
+    if (context === "browser") return "browser";
+    return "unknown";
+  };
+
+  const currentContext = getCurrentContext();
+
+  // Get description for the current context
+  const getContextDescription = () => {
     if (env.NEXT_PUBLIC_DEV_MODE) {
-      return {
-        mode: "Development Mode",
-        description: "Using mock authentication for rapid testing",
-        variant: "secondary" as const,
-      };
+      return "Using mock authentication for rapid testing";
     }
 
     switch (context) {
       case "browser":
-        return {
-          mode: "Browser Mode",
-          description: "Real Privy wallet authentication via browser",
-          variant: "default" as const,
-        };
+        return "Real Privy wallet authentication via browser";
       case "farcaster_miniapp":
-        return {
-          mode: "Farcaster Mode",
-          description: "Frame-based authentication for Farcaster users",
-          variant: "destructive" as const,
-        };
+        return "Frame-based authentication for Farcaster users";
       default:
-        return {
-          mode: "Unknown Context",
-          description: "Context detection in progress",
-          variant: "outline" as const,
-        };
+        return "Context detection in progress";
     }
   };
-
-  const contextInfo = getContextInfo();
 
   const handleLogout = async () => {
     try {
@@ -112,11 +104,28 @@ export function UnifiedAuthTest() {
     <>
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <Badge variant={contextInfo.variant}>{contextInfo.mode}</Badge>
+          <div className="flex justify-center gap-2 mb-3">
+            <Badge
+              variant={currentContext === "dev" ? "default" : "outline"}
+              className={currentContext === "dev" ? "" : "opacity-50"}
+            >
+              Dev
+            </Badge>
+            <Badge
+              variant={currentContext === "browser" ? "default" : "outline"}
+              className={currentContext === "browser" ? "" : "opacity-50"}
+            >
+              Browser
+            </Badge>
+            <Badge
+              variant={currentContext === "miniapp" ? "default" : "outline"}
+              className={currentContext === "miniapp" ? "" : "opacity-50"}
+            >
+              Mini App
+            </Badge>
           </div>
           <CardTitle>Authentication Status</CardTitle>
-          <CardDescription>{contextInfo.description}</CardDescription>
+          <CardDescription>{getContextDescription()}</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">

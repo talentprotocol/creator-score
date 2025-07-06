@@ -26,8 +26,8 @@ export function useAuth() {
     error: null,
   });
 
-  const detectContext = useCallback((): AuthContext => {
-    return ContextDetector.detectFromClient();
+  const detectContext = useCallback(async (): Promise<AuthContext> => {
+    return await ContextDetector.detectFromClient();
   }, []);
 
   const authenticate = useCallback(
@@ -45,11 +45,12 @@ export function useAuth() {
             authProvider: provider,
           };
 
+          const context = await detectContext();
           setDevAuthState({
             isAuthenticated: true,
             user: devUser,
             provider,
-            context: detectContext(),
+            context,
             loading: false,
             error: null,
           });
@@ -71,11 +72,12 @@ export function useAuth() {
           authProvider: provider,
         };
 
+        const context = await detectContext();
         setDevAuthState({
           isAuthenticated: true,
           user,
           provider,
-          context: detectContext(),
+          context,
           loading: false,
           error: null,
         });
@@ -95,14 +97,15 @@ export function useAuth() {
     [detectContext, privyAuth]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     // In dev mode, update local state
     if (env.NEXT_PUBLIC_DEV_MODE) {
+      const context = await detectContext();
       setDevAuthState({
         isAuthenticated: false,
         user: null,
         provider: null,
-        context: detectContext(),
+        context,
         loading: false,
         error: null,
       });
@@ -116,11 +119,12 @@ export function useAuth() {
     }
 
     // Fallback
+    const context = await detectContext();
     setDevAuthState({
       isAuthenticated: false,
       user: null,
       provider: null,
-      context: detectContext(),
+      context,
       loading: false,
       error: null,
     });
@@ -128,29 +132,33 @@ export function useAuth() {
 
   useEffect(() => {
     // Initialize auth state
-    const context = detectContext();
+    async function initializeAuth() {
+      const context = await detectContext();
 
-    // Auto-authenticate in dev mode
-    if (env.NEXT_PUBLIC_DEV_MODE) {
-      const devUser: User = {
-        id: "dev-user-123",
-        walletAddress: "0x1234567890123456789012345678901234567890",
-        fid: 12345,
-        fname: "dev-user",
-        authProvider: "privy",
-      };
+      // Auto-authenticate in dev mode
+      if (env.NEXT_PUBLIC_DEV_MODE) {
+        const devUser: User = {
+          id: "dev-user-123",
+          walletAddress: "0x1234567890123456789012345678901234567890",
+          fid: 12345,
+          fname: "dev-user",
+          authProvider: "privy",
+        };
 
-      setDevAuthState({
-        isAuthenticated: true,
-        user: devUser,
-        provider: "privy",
-        context,
-        loading: false,
-        error: null,
-      });
-    } else {
-      setDevAuthState((prev) => ({ ...prev, context, loading: false }));
+        setDevAuthState({
+          isAuthenticated: true,
+          user: devUser,
+          provider: "privy",
+          context,
+          loading: false,
+          error: null,
+        });
+      } else {
+        setDevAuthState((prev) => ({ ...prev, context, loading: false }));
+      }
     }
+
+    initializeAuth();
   }, [detectContext]);
 
   // Return appropriate auth state based on mode
