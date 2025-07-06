@@ -96,63 +96,17 @@ export function DevAuthProvider({ children }: DevAuthProviderProps) {
     switchUser,
   };
 
-  // Show dev controls if in dev mode
+  // Simple provider without dev controls UI
   if (env.NEXT_PUBLIC_DEV_MODE) {
     return (
       <DevAuthContext.Provider value={contextValue}>
         {children}
-        <DevControls />
       </DevAuthContext.Provider>
     );
   }
 
   // In production, don't provide dev context
   return <>{children}</>;
-}
-
-function DevControls() {
-  const auth = useDevAuth();
-
-  if (!env.NEXT_PUBLIC_DEV_MODE || !auth) return null;
-
-  return (
-    <div className="fixed bottom-20 md:bottom-4 right-4 z-50 bg-yellow-100 border border-yellow-300 rounded-lg p-3 shadow-lg max-w-xs">
-      <div className="text-xs font-medium text-yellow-800 mb-2">DEV MODE</div>
-      <div className="space-y-2 text-xs">
-        <div>
-          <span className="font-medium">User:</span>
-          <select
-            value={auth.user?.fname || "none"}
-            onChange={(e) => {
-              const userType = Object.entries(mockUsers).find(
-                ([, user]) => user.fname === e.target.value
-              )?.[0] as keyof typeof mockUsers;
-              if (userType) auth.switchUser(userType);
-            }}
-            className="ml-1 text-xs bg-white border rounded px-1"
-          >
-            <option value="dev-user">dev-user</option>
-            <option value="dev-builder">dev-builder</option>
-            <option value="new-user">new-user</option>
-          </select>
-        </div>
-        <div>
-          <span className="font-medium">Provider:</span>
-          <select
-            value={auth.provider || "none"}
-            onChange={(e) =>
-              auth.switchProvider(e.target.value as AuthProvider)
-            }
-            className="ml-1 text-xs bg-white border rounded px-1"
-          >
-            <option value="privy">privy</option>
-            <option value="farcaster">farcaster</option>
-          </select>
-        </div>
-        <div className="text-yellow-700">Context: {auth.context}</div>
-      </div>
-    </div>
-  );
 }
 
 export function useDevAuth() {
