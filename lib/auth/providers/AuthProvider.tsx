@@ -13,7 +13,7 @@ interface AuthProviderProps extends ComponentProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [authContext, setAuthContext] = useState<AuthContext>("browser");
-  const [isDetecting, setIsDetecting] = useState(true);
+  const [, setIsDetecting] = useState(true);
 
   useEffect(() => {
     async function detectAuthContext() {
@@ -32,15 +32,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     detectAuthContext();
   }, []);
-
-  if (isDetecting) {
-    // Show loading state while detecting context
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   // In dev mode, skip external auth providers
   if (env.NEXT_PUBLIC_DEV_MODE) {
