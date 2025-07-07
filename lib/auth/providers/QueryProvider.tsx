@@ -1,29 +1,17 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/utils";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { env } from "@/lib/config";
-import type { ComponentProps } from "@/lib/types";
+import type * as React from "react";
 
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 2,
-    },
-  },
-});
+export function QueryProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
 
-interface QueryProviderProps extends ComponentProps {
-  children: React.ReactNode;
-}
-
-export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {env.NEXT_PUBLIC_DEV_MODE && <ReactQueryDevtools initialIsOpen={false} />}
+      <ReactQueryDevtools />
     </QueryClientProvider>
   );
 }
