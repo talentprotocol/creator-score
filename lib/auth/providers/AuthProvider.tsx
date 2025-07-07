@@ -55,17 +55,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   if (authContext === "farcaster_miniapp") {
     // In Farcaster context, only use Farcaster authentication
     // Privy cannot work inside iframes due to security restrictions
-    console.log("🎯 Using Farcaster-only authentication in mini app context");
     return <FarcasterProvider>{children}</FarcasterProvider>;
   }
 
   // In browser context, only use Privy (if available)
   if (hasValidPrivyAppId) {
-    console.log("🎯 Using Privy authentication in browser context");
     return <PrivyProvider>{children}</PrivyProvider>;
   }
 
   // Fallback without Privy in browser context
-  console.log("⚠️ No authentication provider available in browser context");
   return <>{children}</>;
 }

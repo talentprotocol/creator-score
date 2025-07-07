@@ -47,15 +47,12 @@ export function useAuth() {
   const initialize = useCallback(async () => {
     try {
       const context = await detectContext();
-      console.log("🚀 initialize: Detected context:", context);
 
       setDevAuthState((prev) => ({
         ...prev,
         context,
         loading: false,
       }));
-
-      console.log("✅ initialize: Authentication initialized successfully");
     } catch (error) {
       console.error(
         "❌ initialize: Authentication initialization failed:",
@@ -193,11 +190,6 @@ export function useAuth() {
   // Auto-authenticate with Farcaster when user data becomes available
   useEffect(() => {
     if (farcasterAuth && farcasterAuth.user && !farcasterAuth.isLoading) {
-      console.log(
-        "🎯 Auto-authenticating with Farcaster user:",
-        farcasterAuth.user
-      );
-
       // Identify user with PostHog
       PostHogService.identifyUser(farcasterAuth.user, "farcaster_miniapp");
 
@@ -216,7 +208,6 @@ export function useAuth() {
 
   // Return appropriate auth state based on mode and available providers
   if (env.NEXT_PUBLIC_DEV_MODE) {
-    console.log("🔍 useAuth: Using DEV MODE");
     return {
       ...devAuthState,
       authenticate,
@@ -227,7 +218,6 @@ export function useAuth() {
 
   // Check detected context first, then provider availability
   if (devAuthState.context === "farcaster_miniapp" && farcasterAuth) {
-    console.log("🔍 useAuth: Using FARCASTER AUTH", { farcasterAuth });
     return {
       isAuthenticated: !!farcasterAuth.user && !farcasterAuth.isLoading,
       user: farcasterAuth.user,
@@ -243,7 +233,6 @@ export function useAuth() {
 
   // In browser context with Privy available, use Privy state
   if (devAuthState.context === "browser" && privyAuth) {
-    console.log("🔍 useAuth: Using PRIVY AUTH", { privyAuth });
     return {
       ...privyAuth,
       context: devAuthState.context, // Always use our detected context
@@ -254,11 +243,6 @@ export function useAuth() {
   }
 
   // Fallback state (browser without Privy, or any other case)
-  console.log(
-    "🔍 useAuth: Using fallback state with context:",
-    devAuthState.context,
-    { devAuthState }
-  );
   return {
     ...devAuthState,
     authenticate,

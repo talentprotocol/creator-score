@@ -1,105 +1,69 @@
 import type { AuthContext } from "@/lib/types";
 
-// Type definitions for Farcaster SDK on window object
-interface FarcasterWindow extends Window {
-  farcasterSdk?: {
-    context?: {
-      client?: {
-        clientFid?: string;
-      };
-    };
-  };
-  farcaster?: {
-    context?: unknown;
-  };
-  sdk?: {
-    context?: unknown;
-  };
+interface WindowWithFarcaster extends Window {
+  parent: Window;
+  farcaster?: unknown;
 }
 
 export class ContextDetector {
   /**
-   * Detect the authentication context (browser vs farcaster)
+   * Detect the current authentication context
    */
   static async detect(): Promise<AuthContext> {
     try {
-      // Try Farcaster SDK detection first
-      const context = await this.detectFarcasterContext();
-      const heuristicResult = this.detectHeuristicContext();
+      const sdkResult = await this.detectSDK();
+      const heuristicResult = this.detectHeuristic();
 
-      console.log("🔍 Context Detection Debug:", {
-        sdkResult: context,
-        heuristicResult: heuristicResult,
-        isInFrame:
-          typeof window !== "undefined" ? window !== window.parent : false,
-        referrer:
-          typeof document !== "undefined" ? document.referrer : "unknown",
-        userAgent:
-          typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
-        currentUrl:
-          typeof window !== "undefined" ? window.location.href : "unknown",
-      });
-
-      if (context === "farcaster_miniapp") {
-        console.log("✅ Farcaster SDK detected mini app context");
-        return "farcaster_miniapp";
+      // If SDK detection works, prioritize it
+      if (sdkResult) {
+        return sdkResult;
       }
 
-      if (heuristicResult === "farcaster_miniapp") {
-        console.log("✅ Using heuristic detection for Farcaster context");
-        return "farcaster_miniapp";
-      }
-
-      console.log("🌐 Defaulting to browser context");
-      return "browser";
+      // Fall back to heuristic detection
+      return heuristicResult;
     } catch (error) {
       console.error("Context detection failed:", error);
-      return "browser"; // Fallback to browser on any error
+      return "browser"; // Safe fallback
     }
   }
 
   /**
    * Try to detect Farcaster context using the SDK
    */
-  private static async detectFarcasterContext(): Promise<AuthContext | null> {
+  private static async detectSDK(): Promise<AuthContext | null> {
     try {
       // Check if we're in a browser environment
       if (typeof window === "undefined") {
         return null;
       }
 
-      // Wait a bit for the SDK to initialize
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      // Try to dynamically import and check the SDK
+      // Try to access Farcaster SDK
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk");
-
-        // Check if SDK context is available
         const context = await sdk.context;
+
         if (context && context.user) {
-          console.log("🎯 Farcaster SDK context found:", context);
           return "farcaster_miniapp";
         }
-      } catch (sdkError) {
-        console.log("⚠️ Farcaster SDK not available or failed:", sdkError);
+      } catch {
+        // SDK not available or failed to load
+        return null;
       }
 
-      // Check for Farcaster SDK on window object (multiple possible paths)
-      const windowObj = window as FarcasterWindow;
-
+      // Try alternative detection via window object
+      const windowWithFarcaster = window as WindowWithFarcaster;
       if (
-        windowObj.farcasterSdk?.context?.client?.clientFid ||
-        windowObj.farcaster?.context ||
-        windowObj.sdk?.context
+        typeof window !== "undefined" &&
+        window !== windowWithFarcaster.parent
       ) {
-        console.log("🎯 Farcaster SDK found on window object");
-        return "farcaster_miniapp";
+        const farcasterSDK = windowWithFarcaster.farcaster;
+        if (farcasterSDK) {
+          return "farcaster_miniapp";
+        }
       }
 
       return null;
-    } catch (error) {
-      console.log("⚠️ Farcaster SDK detection failed:", error);
+    } catch {
       return null;
     }
   }
@@ -107,88 +71,39 @@ export class ContextDetector {
   /**
    * Heuristic detection based on environment clues
    */
-  private static detectHeuristicContext(): AuthContext {
+  private static detectHeuristic(): AuthContext {
     try {
       if (typeof window === "undefined") {
         return "browser";
       }
 
       const isInFrame = window !== window.parent;
-      const referrer = document.referrer.toLowerCase();
-      const userAgent = navigator.userAgent.toLowerCase();
-      const currentUrl = window.location.href.toLowerCase();
+      const referrer = typeof document !== "undefined" ? document.referrer : "";
+      const currentUrl = window.location.href;
 
-      // Check for Farcaster indicators
-      const farcasterIndicators = [
-        // Referrer-based detection
-        referrer.includes("warpcast"),
-        referrer.includes("farcaster"),
+      // Detect Farcaster context
+      const farcasterIndicators = {
+        isFramed: isInFrame,
+        hasFarcasterReferrer:
+          referrer.includes("farcaster.xyz") ||
+          referrer.includes("warpcast.com"),
+        hasPreviewParam: currentUrl.includes("preview="),
+        isLocalhost: currentUrl.includes("localhost"),
+      };
 
-        // User agent detection
-        userAgent.includes("farcaster"),
-        userAgent.includes("warpcast"),
+      // If we have strong indicators of Farcaster context
+      if (
+        farcasterIndicators.isFramed &&
+        (farcasterIndicators.hasFarcasterReferrer ||
+          farcasterIndicators.hasPreviewParam)
+      ) {
+        return "farcaster_miniapp";
+      }
 
-        // URL-based detection
-        currentUrl.includes("fid="),
-        currentUrl.includes("farcaster"),
-
-        // Frame detection with additional checks
-        isInFrame &&
-          (referrer.includes("app") ||
-            referrer.includes("client") ||
-            referrer.length > 0), // Any referrer when in frame could be Farcaster
-
-        // Check for parent window indicators
-        this.checkParentForFarcaster(),
-
-        // Check for preview context (often used in dev tools)
-        currentUrl.includes("preview"),
-      ];
-
-      const hasAnyIndicator = farcasterIndicators.some(
-        (indicator) => indicator
-      );
-
-      console.log("🔍 Heuristic Detection:", {
-        isInFrame,
-        referrer,
-        userAgent: userAgent.substring(0, 100) + "...",
-        currentUrl: currentUrl.substring(0, 100) + "...",
-        indicators: {
-          warpcastReferrer: referrer.includes("warpcast"),
-          farcasterReferrer: referrer.includes("farcaster"),
-          farcasterUserAgent: userAgent.includes("farcaster"),
-          hasFidParam: currentUrl.includes("fid="),
-          isInFrameWithReferrer: isInFrame && referrer.length > 0,
-          parentHasFarcaster: this.checkParentForFarcaster(),
-          isPreview: currentUrl.includes("preview"),
-        },
-        result: hasAnyIndicator ? "farcaster_miniapp" : "browser",
-      });
-
-      return hasAnyIndicator ? "farcaster_miniapp" : "browser";
+      return "browser";
     } catch (error) {
       console.error("Heuristic detection failed:", error);
       return "browser";
-    }
-  }
-
-  /**
-   * Check if parent window has Farcaster indicators
-   */
-  private static checkParentForFarcaster(): boolean {
-    try {
-      if (typeof window === "undefined" || window === window.parent) {
-        return false;
-      }
-
-      // Try to access parent window properties (may fail due to CORS)
-      const parentObj = window.parent as FarcasterWindow;
-      return !!(parentObj.farcasterSdk || parentObj.farcaster || parentObj.sdk);
-    } catch {
-      // CORS prevents access, but being in a frame with blocked access
-      // is actually a good indicator we might be in Farcaster
-      return window !== window.parent;
     }
   }
 }

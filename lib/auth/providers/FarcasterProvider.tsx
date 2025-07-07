@@ -110,7 +110,6 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
       try {
         // Notification permission API might not be available in current SDK version
         // This is a placeholder for future implementation
-        console.log("Requesting notification permission...");
         setMiniAppStatus((prev) => ({ ...prev, notificationsEnabled: true }));
         return true;
       } catch (error) {
@@ -186,7 +185,6 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
         const context = await sdk.context;
 
         if (!context || !context.user) {
-          console.log("No user context available");
           if (mounted) {
             setError("No user context available");
             setIsLoading(false);

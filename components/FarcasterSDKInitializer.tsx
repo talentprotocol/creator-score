@@ -1,52 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function FarcasterSDKInitializer() {
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
+
   useEffect(() => {
-    let isInitialized = false;
-
-    const initializeFarcasterSDK = async () => {
-      // Prevent multiple initializations
-      if (isInitialized) return;
-
+    async function initSDK() {
       try {
-        console.log("🚀 Attempting to initialize Farcaster SDK...");
-
-        // Try to import and initialize the SDK
+        // Dynamic import to handle cases where SDK might not be available
         const { sdk } = await import("@farcaster/miniapp-sdk");
 
-        console.log("📱 Farcaster SDK imported successfully");
-
-        // Call ready() to signal the app has loaded
+        // Call ready to initialize the SDK
         await sdk.actions.ready();
-
-        console.log("✅ Farcaster SDK ready() called successfully");
-        isInitialized = true;
-      } catch (error) {
-        console.log(
-          "⚠️ Farcaster SDK initialization failed (expected if not in Farcaster context):",
-          error
-        );
+      } catch {
+        // If this is not the final retry, attempt again
+        if (retryCount < maxRetries) {
+          setRetryCount((prev) => prev + 1);
+          // Small delay before retry
+          setTimeout(() => initSDK(), 500 + retryCount * 200);
+        }
       }
-    };
+    }
 
-    // Initialize immediately
-    initializeFarcasterSDK();
+    initSDK();
+  }, [retryCount]);
 
-    // Also try again after a short delay in case of timing issues
-    const timeoutId = setTimeout(() => {
-      if (!isInitialized) {
-        console.log("🔄 Retrying Farcaster SDK initialization...");
-        initializeFarcasterSDK();
-      }
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  // This component doesn't render anything visible
-  return null;
+  return null; // This component doesn't render anything
 }
