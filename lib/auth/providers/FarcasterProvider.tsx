@@ -8,7 +8,8 @@ import type {
   FarcasterMiniAppActions,
   FarcasterContextData,
 } from "@/lib/types";
-import React from "react";
+import React, { createContext, useContext } from "react";
+import { FarcasterSDKInitializer } from "@/components/FarcasterSDKInitializer";
 
 // Type for Farcaster SDK (simplified version to avoid import issues)
 type FarcasterSDK = {
@@ -38,6 +39,7 @@ interface FarcasterContextValue {
   contextData: FarcasterContextData | null;
 }
 
+// Create context with default values
 const FarcasterContext = React.createContext<FarcasterContextValue>({
   sdk: null,
   user: null,
@@ -270,6 +272,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
 
   return (
     <FarcasterContext.Provider value={contextValue}>
+      <FarcasterSDKInitializer />
       {children}
     </FarcasterContext.Provider>
   );

@@ -59,14 +59,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return <FarcasterProvider>{children}</FarcasterProvider>;
   }
 
-  // Default to browser context with Privy (if available)
+  // In browser context, only use Privy (if available)
   if (hasValidPrivyAppId) {
+    console.log("🎯 Using Privy authentication in browser context");
     return <PrivyProvider>{children}</PrivyProvider>;
   }
 
-  // Fallback without Privy
-  console.warn(
-    "No valid Privy app ID found. Some authentication features may be unavailable."
-  );
+  // Fallback without Privy in browser context
+  console.log("⚠️ No authentication provider available in browser context");
   return <>{children}</>;
 }

@@ -3,7 +3,6 @@
 import { AuthProvider } from "@/lib/auth/providers/AuthProvider";
 import { DevAuthProvider } from "@/lib/auth/providers/DevAuthProvider";
 import { QueryProvider } from "@/lib/auth/providers/QueryProvider";
-import { FarcasterSDKInitializer } from "@/components/FarcasterSDKInitializer";
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "posthog-js/react";
 import { env } from "@/lib/config";
@@ -26,7 +25,6 @@ export function Providers({ children }: ProvidersProps) {
     >
       <QueryProvider>
         <AuthProvider>
-          <FarcasterSDKInitializer />
           {env.NEXT_PUBLIC_DEV_MODE ? (
             <DevAuthProvider>
               {children}

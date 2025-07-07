@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import type { AuthState, User, AuthProvider, AuthContext } from "@/lib/types";
 import { env } from "@/lib/config";
 import { ContextDetector } from "@/lib/auth/resolvers/ContextDetector";
@@ -46,20 +46,21 @@ export function useAuth() {
    */
   const initialize = useCallback(async () => {
     try {
-      setDevAuthState((prev) => ({ ...prev, loading: true, error: null }));
-
-      // Detect the authentication context
       const context = await detectContext();
-
-      // Always log the detected context for debugging
-      console.log("🔍 useAuth: Detected context:", context);
+      console.log("🚀 initialize: Detected context:", context);
 
       setDevAuthState((prev) => ({
         ...prev,
         context,
         loading: false,
       }));
+
+      console.log("✅ initialize: Authentication initialized successfully");
     } catch (error) {
+      console.error(
+        "❌ initialize: Authentication initialization failed:",
+        error
+      );
       setDevAuthState((prev) => ({
         ...prev,
         error:
@@ -215,6 +216,7 @@ export function useAuth() {
 
   // Return appropriate auth state based on mode and available providers
   if (env.NEXT_PUBLIC_DEV_MODE) {
+    console.log("🔍 useAuth: Using DEV MODE");
     return {
       ...devAuthState,
       authenticate,
@@ -223,8 +225,9 @@ export function useAuth() {
     };
   }
 
-  // In Farcaster context, use Farcaster authentication
-  if (farcasterAuth) {
+  // Check detected context first, then provider availability
+  if (devAuthState.context === "farcaster_miniapp" && farcasterAuth) {
+    console.log("🔍 useAuth: Using FARCASTER AUTH", { farcasterAuth });
     return {
       isAuthenticated: !!farcasterAuth.user && !farcasterAuth.isLoading,
       user: farcasterAuth.user,
@@ -238,8 +241,9 @@ export function useAuth() {
     };
   }
 
-  // In production with Privy available, use Privy state but ensure context is from our detection
-  if (privyAuth) {
+  // In browser context with Privy available, use Privy state
+  if (devAuthState.context === "browser" && privyAuth) {
+    console.log("🔍 useAuth: Using PRIVY AUTH", { privyAuth });
     return {
       ...privyAuth,
       context: devAuthState.context, // Always use our detected context
@@ -249,10 +253,11 @@ export function useAuth() {
     };
   }
 
-  // Fallback state (browser without Privy)
+  // Fallback state (browser without Privy, or any other case)
   console.log(
     "🔍 useAuth: Using fallback state with context:",
-    devAuthState.context
+    devAuthState.context,
+    { devAuthState }
   );
   return {
     ...devAuthState,
