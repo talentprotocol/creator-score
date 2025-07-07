@@ -8,7 +8,7 @@ import type {
   FarcasterMiniAppActions,
   FarcasterContextData,
 } from "@/lib/types";
-import React, { createContext, useContext } from "react";
+import React from "react";
 import { FarcasterSDKInitializer } from "@/components/FarcasterSDKInitializer";
 
 // Type for Farcaster SDK (simplified version to avoid import issues)
