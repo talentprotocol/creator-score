@@ -3,6 +3,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import type { AuthState, User } from "@/lib/types";
+import { PostHogService } from "@/app/services/PostHogService";
 
 /**
  * Bridge hook that connects Privy's auth state with our AuthState interface
@@ -46,6 +47,9 @@ export function usePrivyBridge(): AuthState & {
         authProvider: "privy" as const,
       };
 
+      // Identify user with PostHog
+      PostHogService.identifyUser(transformedUser, "browser");
+
       setAuthState({
         isAuthenticated: true,
         user: transformedUser,
@@ -55,7 +59,9 @@ export function usePrivyBridge(): AuthState & {
         error: null,
       });
     } else {
-      // Not authenticated
+      // Not authenticated - reset PostHog identity
+      PostHogService.resetIdentity("browser");
+
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -67,38 +73,15 @@ export function usePrivyBridge(): AuthState & {
     }
   }, [ready, authenticated, privyUser]);
 
-  const handleLogout = async () => {
-    try {
-      await privyLogout();
-
-      // Check if user has external wallets connected
-      const hasExternalWallet = privyUser?.linkedAccounts?.some(
-        (account) =>
-          account.type === "wallet" && account.walletClientType === "metamask"
-      );
-
-      if (hasExternalWallet) {
-        // Inform user about manual disconnection requirement
-        console.warn(
-          "External wallet (MetaMask) remains connected. " +
-            "To fully disconnect, manually disconnect from your wallet extension."
-        );
-
-        // You could also show a toast notification here
-        // toast.info("Please manually disconnect from your wallet extension to complete logout");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-      setAuthState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : "Logout failed",
-      }));
-    }
+  const wrappedLogout = () => {
+    // Track logout intent before calling Privy logout
+    PostHogService.trackLogoutInitiated("browser", "privy");
+    privyLogout();
   };
 
   return {
     ...authState,
     login,
-    logout: handleLogout,
+    logout: wrappedLogout,
   };
 }

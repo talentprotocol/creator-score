@@ -160,6 +160,10 @@ app-name/
 │   └── fixtures/                         # Test data
 │
 ├── docs/                                 # Documentation
+│   ├── logs/                             # Integration & decision logs
+│   │   ├── [integration]-integration.md  # Concise implementation summaries
+│   │   ├── [decision]-decision.md        # Key development decisions
+│   │   └── [feature]-implementation.md   # Feature implementation logs
 │   ├── architecture/                     # Architecture docs
 │   │   ├── principles.md                 # Core principles
 │   │   ├── patterns.md                   # Design patterns

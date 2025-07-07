@@ -19,7 +19,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     async function detectAuthContext() {
       try {
         // Detect authentication context on the client side
-        const detected = await ContextDetector.detectFromClient();
+        const detected = await ContextDetector.detect();
         setAuthContext(detected);
       } catch (error) {
         console.error("Failed to detect auth context:", error);

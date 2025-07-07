@@ -59,6 +59,16 @@ External APIs → API Clients → Services → API Routes → Hooks → Pure UI 
 - Server-side packages (Node.js SDKs) only exist in `/api` routes and `/services`
 - This ensures clean separation, smaller client bundles, and prevents runtime errors
 
+### Product Analytics
+
+- **Analytics Platform**: PostHog (EU region) integrated for user behavior tracking and product insights
+- **User Identification**: Automatic user identification across all authentication contexts (Privy, Farcaster, Dev mode)
+- **Event Tracking Standard**: All new features should include relevant PostHog events for user behavior analysis
+- **Implementation Pattern**: Use `usePostHog()` hook with optional chaining (`posthog?.capture()`) - never direct imports
+- **Event Naming**: Descriptive names with context (e.g., `creator_category_selected` not `click`)
+- **Error Resilience**: App functionality independent of PostHog availability
+- **Event Schema**: Document event properties and user properties in `/docs/posthog-integration.md`
+
 ### Data Fetching Principles
 
 - **Hook Interface Standard**: All hooks return `{data, loading, error}` consistently

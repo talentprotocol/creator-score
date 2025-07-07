@@ -1,4 +1,5 @@
 import { UnifiedAuthTest } from "@/components/auth/UnifiedAuthTest";
+import { CategorySelection } from "@/components/features/CategorySelection";
 
 export default function HomePage() {
   return (
@@ -13,6 +14,19 @@ export default function HomePage() {
           </div>
 
           <UnifiedAuthTest />
+
+          {/* PostHog Event Tracking Test */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold">
+                PostHog Event Tracking Test
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Select a category to test custom event tracking
+              </p>
+            </div>
+            <CategorySelection />
+          </div>
         </div>
       </div>
     </main>

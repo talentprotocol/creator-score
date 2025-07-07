@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AuthState, User, AuthProvider, AuthContext } from "@/lib/types";
 import { env } from "@/lib/config";
-import { ContextDetector } from "@/lib/auth";
+import { ContextDetector } from "@/lib/auth/resolvers/ContextDetector";
 import { usePrivyAuth } from "@/lib/auth/providers/PrivyProvider";
+import { PostHogService } from "@/app/services/PostHogService";
 
 export function useAuth() {
   // Get Privy auth state (only available when wrapped in PrivyProvider)
@@ -26,8 +27,33 @@ export function useAuth() {
     error: null,
   });
 
+  /**
+   * Initialize auth and detect context
+   */
+  const initialize = useCallback(async () => {
+    try {
+      setDevAuthState((prev) => ({ ...prev, loading: true, error: null }));
+
+      // Detect the authentication context
+      const context = await detectContext();
+
+      setDevAuthState((prev) => ({
+        ...prev,
+        context,
+        loading: false,
+      }));
+    } catch (error) {
+      setDevAuthState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error ? error.message : "Auth initialization failed",
+        loading: false,
+      }));
+    }
+  }, []);
+
   const detectContext = useCallback(async (): Promise<AuthContext> => {
-    return await ContextDetector.detectFromClient();
+    return await ContextDetector.detect();
   }, []);
 
   const authenticate = useCallback(
@@ -46,6 +72,10 @@ export function useAuth() {
           };
 
           const context = await detectContext();
+
+          // Identify user with PostHog
+          PostHogService.identifyUser(devUser, context);
+
           setDevAuthState({
             isAuthenticated: true,
             user: devUser,
@@ -73,6 +103,10 @@ export function useAuth() {
         };
 
         const context = await detectContext();
+
+        // Identify user with PostHog
+        PostHogService.identifyUser(user, context);
+
         setDevAuthState({
           isAuthenticated: true,
           user,
@@ -98,9 +132,13 @@ export function useAuth() {
   );
 
   const logout = useCallback(async () => {
+    const context = await detectContext();
+
+    // Reset PostHog identity on logout
+    PostHogService.resetIdentity(context);
+
     // In dev mode, update local state
     if (env.NEXT_PUBLIC_DEV_MODE) {
-      const context = await detectContext();
       setDevAuthState({
         isAuthenticated: false,
         user: null,
@@ -119,7 +157,6 @@ export function useAuth() {
     }
 
     // Fallback
-    const context = await detectContext();
     setDevAuthState({
       isAuthenticated: false,
       user: null,
@@ -132,34 +169,8 @@ export function useAuth() {
 
   useEffect(() => {
     // Initialize auth state
-    async function initializeAuth() {
-      const context = await detectContext();
-
-      // Auto-authenticate in dev mode
-      if (env.NEXT_PUBLIC_DEV_MODE) {
-        const devUser: User = {
-          id: "dev-user-123",
-          walletAddress: "0x1234567890123456789012345678901234567890",
-          fid: 12345,
-          fname: "dev-user",
-          authProvider: "privy",
-        };
-
-        setDevAuthState({
-          isAuthenticated: true,
-          user: devUser,
-          provider: "privy",
-          context,
-          loading: false,
-          error: null,
-        });
-      } else {
-        setDevAuthState((prev) => ({ ...prev, context, loading: false }));
-      }
-    }
-
-    initializeAuth();
-  }, [detectContext]);
+    initialize();
+  }, [initialize]);
 
   // Return appropriate auth state based on mode
   if (env.NEXT_PUBLIC_DEV_MODE) {
@@ -167,6 +178,7 @@ export function useAuth() {
       ...devAuthState,
       authenticate,
       logout,
+      initialize,
     };
   }
 
@@ -176,6 +188,7 @@ export function useAuth() {
       ...privyAuth,
       authenticate,
       logout,
+      initialize,
     };
   }
 
@@ -184,5 +197,6 @@ export function useAuth() {
     ...devAuthState,
     authenticate,
     logout,
+    initialize,
   };
 }

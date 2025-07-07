@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth/providers/AuthProvider";
 import { DevAuthProvider } from "@/lib/auth/providers/DevAuthProvider";
 import { QueryProvider } from "@/lib/auth/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider } from "posthog-js/react";
 import { env } from "@/lib/config";
 
 interface ProvidersProps {
@@ -12,20 +13,31 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <QueryProvider>
-      <AuthProvider>
-        {env.NEXT_PUBLIC_DEV_MODE ? (
-          <DevAuthProvider>
-            {children}
-            <Toaster />
-          </DevAuthProvider>
-        ) : (
-          <>
-            {children}
-            <Toaster />
-          </>
-        )}
-      </AuthProvider>
-    </QueryProvider>
+    <PostHogProvider
+      apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY!}
+      options={{
+        api_host: "/ingest",
+        ui_host: "https://eu.posthog.com",
+        capture_pageview: true,
+        capture_exceptions: true,
+        debug: process.env.NODE_ENV === "development",
+      }}
+    >
+      <QueryProvider>
+        <AuthProvider>
+          {env.NEXT_PUBLIC_DEV_MODE ? (
+            <DevAuthProvider>
+              {children}
+              <Toaster />
+            </DevAuthProvider>
+          ) : (
+            <>
+              {children}
+              <Toaster />
+            </>
+          )}
+        </AuthProvider>
+      </QueryProvider>
+    </PostHogProvider>
   );
 }

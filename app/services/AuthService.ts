@@ -74,7 +74,6 @@ export class AuthService {
     try {
       // TODO: Implement actual validation against Farcaster Hub
       // This is a placeholder for the actual validation logic
-      console.log("Validating frame signature:", { messageBytes, signature });
 
       // For now, return true if both messageBytes and signature exist
       const isValid = !!(messageBytes && signature);
