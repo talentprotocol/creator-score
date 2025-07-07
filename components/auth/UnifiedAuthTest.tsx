@@ -204,7 +204,7 @@ export function UnifiedAuthTest() {
                     </span>
                   </div>
                   <p className="text-xs text-purple-600 mt-1">
-                    You're automatically authenticated via Farcaster
+                    You&apos;re automatically authenticated via Farcaster
                   </p>
                 </div>
               )}
