@@ -37,6 +37,9 @@ export function useAuth() {
       // Detect the authentication context
       const context = await detectContext();
 
+      // Always log the detected context for debugging
+      console.log("🔍 useAuth: Detected context:", context);
+
       setDevAuthState((prev) => ({
         ...prev,
         context,
@@ -182,17 +185,22 @@ export function useAuth() {
     };
   }
 
-  // In production, use Privy state if available
+  // In production, use Privy state if available, but ensure context is from our detection
   if (privyAuth) {
     return {
       ...privyAuth,
+      context: devAuthState.context, // Always use our detected context
       authenticate,
       logout,
       initialize,
     };
   }
 
-  // Fallback state
+  // Fallback state (should be used in Farcaster context)
+  console.log(
+    "🔍 useAuth: Using fallback state with context:",
+    devAuthState.context
+  );
   return {
     ...devAuthState,
     authenticate,
