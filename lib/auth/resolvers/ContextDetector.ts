@@ -1,5 +1,22 @@
 import type { AuthContext } from "@/lib/types";
 
+// Type definitions for Farcaster SDK on window object
+interface FarcasterWindow extends Window {
+  farcasterSdk?: {
+    context?: {
+      client?: {
+        clientFid?: string;
+      };
+    };
+  };
+  farcaster?: {
+    context?: unknown;
+  };
+  sdk?: {
+    context?: unknown;
+  };
+}
+
 export class ContextDetector {
   /**
    * Detect the authentication context (browser vs farcaster)
@@ -69,7 +86,7 @@ export class ContextDetector {
       }
 
       // Check for Farcaster SDK on window object (multiple possible paths)
-      const windowObj = window as any;
+      const windowObj = window as FarcasterWindow;
 
       if (
         windowObj.farcasterSdk?.context?.client?.clientFid ||
@@ -166,7 +183,7 @@ export class ContextDetector {
       }
 
       // Try to access parent window properties (may fail due to CORS)
-      const parentObj = window.parent as any;
+      const parentObj = window.parent as FarcasterWindow;
       return !!(parentObj.farcasterSdk || parentObj.farcaster || parentObj.sdk);
     } catch {
       // CORS prevents access, but being in a frame with blocked access
