@@ -7,6 +7,8 @@ export interface User {
   walletAddress?: string;
   fid?: number;
   fname?: string;
+  displayName?: string;
+  pfpUrl?: string;
   authProvider: AuthProvider;
 }
 

@@ -200,6 +200,8 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
           id: `farcaster_${context.user.fid}`,
           fid: context.user.fid,
           fname: context.user.username,
+          displayName: context.user.displayName,
+          pfpUrl: context.user.pfpUrl,
           walletAddress: undefined, // Will be available if user has connected wallet
           authProvider: "farcaster",
         };

@@ -139,19 +139,54 @@ export function UnifiedAuthTest() {
                   </span>
                 </div>
                 <div className="mt-2 text-xs text-green-600">
-                  <div>
-                    <strong>User ID:</strong> {user.id}
-                  </div>
-                  {user.fid && (
-                    <div>
-                      <strong>Farcaster ID:</strong> {user.fid}
-                    </div>
+                  {/* Show Farcaster profile info for Farcaster users */}
+                  {user.authProvider === "farcaster" && (
+                    <>
+                      {user.fid && (
+                        <div>
+                          <strong>Farcaster ID:</strong> {user.fid}
+                        </div>
+                      )}
+                      {user.fname && (
+                        <div>
+                          <strong>Username:</strong> @{user.fname}
+                        </div>
+                      )}
+                      {user.displayName && (
+                        <div>
+                          <strong>Display Name:</strong> {user.displayName}
+                        </div>
+                      )}
+                      {user.pfpUrl && (
+                        <div className="flex items-center space-x-2 mt-1">
+                          <strong className="flex-shrink-0">
+                            Profile Picture:
+                          </strong>
+                          <div className="flex items-center space-x-2">
+                            <img
+                              src={user.pfpUrl}
+                              alt="Profile"
+                              className="w-6 h-6 rounded-full"
+                              onError={(e) => {
+                                // Hide image on error and show link instead
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                            <a
+                              href={user.pfpUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline text-xs"
+                            >
+                              View Full Size
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                  {user.fname && (
-                    <div>
-                      <strong>Username:</strong> @{user.fname}
-                    </div>
-                  )}
+
+                  {/* Show wallet info for wallet users */}
                   {user.walletAddress && (
                     <div>
                       <strong>Wallet:</strong> {user.walletAddress.slice(0, 6)}
@@ -159,6 +194,7 @@ export function UnifiedAuthTest() {
                       {user.walletAddress.slice(-4)}
                     </div>
                   )}
+
                   <div>
                     <strong>Provider:</strong> {user.authProvider}
                   </div>
