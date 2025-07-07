@@ -42,17 +42,7 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Redirects for Farcaster manifest
-  async redirects() {
-    return [
-      {
-        source: "/.well-known/farcaster.json",
-        destination:
-          "https://api.farcaster.xyz/miniapps/hosted-manifest/0197e495-f69b-69f9-eb39-46be5a76f9d4",
-        permanent: false,
-      },
-    ];
-  },
+  // Redirects removed - now hosting manifest locally at public/.well-known/farcaster.json
 
   // Rewrites to support PostHog
   async rewrites() {

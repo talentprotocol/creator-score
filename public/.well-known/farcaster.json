@@ -1,0 +1,26 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjIwNDQyLCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4NDQ1Nzc2QzU4RDZmZkI0NWQ5YjlmNkQ2ODI0NkU5ODVFMTgzMDI2NSJ9",
+    "payload": "eyJkb21haW4iOiJuZXcuY3JlYXRvcnNjb3JlLmFwcCJ9",
+    "signature": "MHg1YTA3ZjAzMGI4OTY1NzIyZTA5MjczMDVjNDc4MjI4NmQ2NzY3MWQzZjRjYzA3NDUzMDkyMjJjMDY2ZTdmNTUyMmY1NWFlODQzZDk2ZGMxYjA5ZjYyMTZlNmZlZjJkNjBkNDIxNjJjYTE5ZjgzNDkwNGNmNTBmYjdmMzYwN2Y4ZjFi"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Creator Score",
+    "homeUrl": "https://new.creatorscore.app",
+    "iconUrl": "https://new.creatorscore.app/images/miniapp/icon.png",
+    "subtitle": "Create onchain, start earning",
+    "description": "Creator Score powers the onchain creator economy with quality reputation data, and helps real creators get the recognition they deserve.",
+    "heroImageUrl": "https://new.creatorscore.app/images/miniapp/hero.png",
+    "tagline": "Create onchain, start earning",
+    "ogTitle": "Creator Score",
+    "ogDescription": "Connect your creator accounts, increase your score and start earning rewards.",
+    "splashImageUrl": "https://new.creatorscore.app/images/miniapp/splash.png",
+    "splashBackgroundColor": "#ffffff",
+    "primaryCategory": "social",
+    "tags": ["creator"],
+    "webhookUrl": "https://new.creatorscore.app/api/webhook",
+    "imageUrl": "https://new.creatorscore.app/image.png",
+    "buttonTitle": "Open App"
+  }
+}
