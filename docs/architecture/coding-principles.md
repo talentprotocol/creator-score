@@ -93,7 +93,7 @@ External APIs → API Clients → Services → API Routes → Hooks → Pure UI 
 ### Tech Stack & Performance
 
 - **Framework**: Next.js 14 (App Router), React 18+, shadcn/ui, Tailwind CSS
-- **Authentication**: MiniKit (Farcaster) + Dynamic SDK (wallet-only authentication) with development mode bypass
+- **Authentication**: Farcaster SDK + Privy SDK (wallet-only authentication) with development mode bypass
 - **State Management**: React hooks + context (no external state library)
 - **Caching**: Custom hook-based caching with appropriate TTLs
 - **TypeScript**: Strict mode with comprehensive typing throughout
