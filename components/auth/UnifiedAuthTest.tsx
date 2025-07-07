@@ -129,7 +129,7 @@ export function UnifiedAuthTest() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {isAuthenticated && user ? (
+          {isAuthenticated ? (
             <div className="space-y-3">
               <div className="bg-green-50 border border-green-200 rounded p-3">
                 <div className="flex items-center space-x-2">
@@ -138,44 +138,33 @@ export function UnifiedAuthTest() {
                     Authenticated
                   </span>
                 </div>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-medium">User ID:</span>
-                  <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                    {user.id}
-                  </span>
+                <div className="mt-2 text-xs text-green-600">
+                  <div>
+                    <strong>User ID:</strong> {user.id}
+                  </div>
+                  {user.fid && (
+                    <div>
+                      <strong>Farcaster ID:</strong> {user.fid}
+                    </div>
+                  )}
+                  {user.fname && (
+                    <div>
+                      <strong>Username:</strong> @{user.fname}
+                    </div>
+                  )}
+                  {user.walletAddress && (
+                    <div>
+                      <strong>Wallet:</strong> {user.walletAddress.slice(0, 6)}
+                      ...
+                      {user.walletAddress.slice(-4)}
+                    </div>
+                  )}
+                  <div>
+                    <strong>Provider:</strong> {user.authProvider}
+                  </div>
                 </div>
-
-                {user.walletAddress && (
-                  <div>
-                    <span className="font-medium">Wallet:</span>
-                    <span className="ml-2 font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                      {`${user.walletAddress.slice(
-                        0,
-                        6
-                      )}...${user.walletAddress.slice(-4)}`}
-                    </span>
-                  </div>
-                )}
-
-                {user.fid && (
-                  <div>
-                    <span className="font-medium">FID:</span>
-                    <span className="ml-2">{user.fid}</span>
-                  </div>
-                )}
-
-                {user.fname && (
-                  <div>
-                    <span className="font-medium">Username:</span>
-                    <span className="ml-2">@{user.fname}</span>
-                  </div>
-                )}
               </div>
 
-              {/* Inline Wallet Connection Status */}
               {user.walletAddress &&
                 !env.NEXT_PUBLIC_DEV_MODE &&
                 context === "browser" && (
@@ -194,13 +183,31 @@ export function UnifiedAuthTest() {
                   </div>
                 )}
 
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="w-full"
-              >
-                Logout
-              </Button>
+              {/* Only show logout button in browser or dev mode */}
+              {(context === "browser" || env.NEXT_PUBLIC_DEV_MODE) && (
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Logout
+                </Button>
+              )}
+
+              {/* Show info message for Farcaster users */}
+              {context === "farcaster_miniapp" && (
+                <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-purple-800">
+                      Farcaster Mini App
+                    </span>
+                  </div>
+                  <p className="text-xs text-purple-600 mt-1">
+                    You're automatically authenticated via Farcaster
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -213,24 +220,39 @@ export function UnifiedAuthTest() {
                 </div>
               </div>
 
-              <Button
-                onClick={() =>
-                  authenticate(
-                    env.NEXT_PUBLIC_DEV_MODE
-                      ? "privy"
-                      : context === "farcaster_miniapp"
-                      ? "farcaster"
-                      : "privy"
-                  )
-                }
-                className="w-full"
-              >
-                {env.NEXT_PUBLIC_DEV_MODE
-                  ? "Dev Login"
-                  : context === "farcaster_miniapp"
-                  ? "Connect Farcaster"
-                  : "Connect Wallet"}
-              </Button>
+              {/* Only show connect button in browser or dev mode */}
+              {(context === "browser" || env.NEXT_PUBLIC_DEV_MODE) && (
+                <Button
+                  onClick={() =>
+                    authenticate(
+                      env.NEXT_PUBLIC_DEV_MODE
+                        ? "privy"
+                        : context === "farcaster_miniapp"
+                        ? "farcaster"
+                        : "privy"
+                    )
+                  }
+                  className="w-full"
+                >
+                  {env.NEXT_PUBLIC_DEV_MODE
+                    ? "Dev Login"
+                    : context === "farcaster_miniapp"
+                    ? "Connect Farcaster"
+                    : "Connect Wallet"}
+                </Button>
+              )}
+
+              {/* Show loading message for Farcaster users */}
+              {context === "farcaster_miniapp" && (
+                <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-purple-800">
+                      Loading Farcaster Profile...
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

@@ -7,6 +7,17 @@ import { ContextDetector } from "@/lib/auth/resolvers/ContextDetector";
 import { usePrivyAuth } from "@/lib/auth/providers/PrivyProvider";
 import { PostHogService } from "@/app/services/PostHogService";
 
+// Farcaster provider hook (only available when wrapped in FarcasterProvider)
+function useFarcasterAuth() {
+  try {
+    // Dynamic import to avoid errors when not in Farcaster context
+    const { useFarcaster } = require("@/lib/auth/providers/FarcasterProvider");
+    return useFarcaster();
+  } catch {
+    return null;
+  }
+}
+
 export function useAuth() {
   // Get Privy auth state (only available when wrapped in PrivyProvider)
   let privyAuth: ReturnType<typeof usePrivyAuth> | null = null;
@@ -17,6 +28,9 @@ export function useAuth() {
     // Not in Privy context, will use dev mode or fallback
     privyAuth = null;
   }
+
+  // Get Farcaster auth state (only available when wrapped in FarcasterProvider)
+  const farcasterAuth = useFarcasterAuth();
 
   const [devAuthState, setDevAuthState] = useState<AuthState>({
     isAuthenticated: false,
@@ -175,7 +189,31 @@ export function useAuth() {
     initialize();
   }, [initialize]);
 
-  // Return appropriate auth state based on mode
+  // Auto-authenticate with Farcaster when user data becomes available
+  useEffect(() => {
+    if (farcasterAuth && farcasterAuth.user && !farcasterAuth.isLoading) {
+      console.log(
+        "🎯 Auto-authenticating with Farcaster user:",
+        farcasterAuth.user
+      );
+
+      // Identify user with PostHog
+      PostHogService.identifyUser(farcasterAuth.user, "farcaster_miniapp");
+
+      // Update our state to reflect authentication
+      setDevAuthState((prev) => ({
+        ...prev,
+        isAuthenticated: true,
+        user: farcasterAuth.user,
+        provider: "farcaster",
+        context: "farcaster_miniapp",
+        loading: false,
+        error: null,
+      }));
+    }
+  }, [farcasterAuth?.user, farcasterAuth?.isLoading]);
+
+  // Return appropriate auth state based on mode and available providers
   if (env.NEXT_PUBLIC_DEV_MODE) {
     return {
       ...devAuthState,
@@ -185,7 +223,22 @@ export function useAuth() {
     };
   }
 
-  // In production, use Privy state if available, but ensure context is from our detection
+  // In Farcaster context, use Farcaster authentication
+  if (farcasterAuth) {
+    return {
+      isAuthenticated: !!farcasterAuth.user && !farcasterAuth.isLoading,
+      user: farcasterAuth.user,
+      provider: "farcaster" as AuthProvider,
+      context: "farcaster_miniapp" as AuthContext,
+      loading: farcasterAuth.isLoading,
+      error: farcasterAuth.error,
+      authenticate,
+      logout,
+      initialize,
+    };
+  }
+
+  // In production with Privy available, use Privy state but ensure context is from our detection
   if (privyAuth) {
     return {
       ...privyAuth,
@@ -196,7 +249,7 @@ export function useAuth() {
     };
   }
 
-  // Fallback state (should be used in Farcaster context)
+  // Fallback state (browser without Privy)
   console.log(
     "🔍 useAuth: Using fallback state with context:",
     devAuthState.context
