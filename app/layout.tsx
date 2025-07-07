@@ -14,19 +14,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Generate meta tags
+const miniAppMetaTags = generateMiniAppMetaTags();
+const openGraphConfig = generateOpenGraphConfig();
+
 export const metadata: Metadata = {
   title: "Creator Score",
   description:
     "Fast, minimal, scalable Next.js app with dual authentication and Talent Protocol integration",
-  openGraph: generateOpenGraphConfig(),
-  other: generateMiniAppMetaTags(),
+  openGraph: openGraphConfig,
+  twitter: {
+    card: "summary_large_image",
+    title: openGraphConfig.title,
+    description: openGraphConfig.description,
+    images: openGraphConfig.images,
+  },
+  other: miniAppMetaTags,
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <body

@@ -18,9 +18,6 @@
     "splashImageUrl": "https://new.creatorscore.app/images/miniapp/splash.png",
     "splashBackgroundColor": "#ffffff",
     "primaryCategory": "social",
-    "tags": ["creator"],
-    "webhookUrl": "https://new.creatorscore.app/api/webhook",
-    "imageUrl": "https://new.creatorscore.app/image.png",
-    "buttonTitle": "Open App"
+    "tags": ["creator"]
   }
 }
