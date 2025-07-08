@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { User, AuthProvider, ApiResponse } from "@/lib/types";
-import { CACHE_DURATIONS } from "@/lib/config";
+import { CACHE_DURATIONS } from "@/lib/utils/cache";
 
 interface UseUserResolverOptions {
   identifier: string | null;

@@ -9,7 +9,6 @@ import type {
   FarcasterContextData,
 } from "@/lib/types";
 import React from "react";
-import { FarcasterSDKInitializer } from "@/components/FarcasterSDKInitializer";
 
 // Type for Farcaster SDK (simplified version to avoid import issues)
 type FarcasterSDK = {
@@ -73,6 +72,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [miniAppStatus, setMiniAppStatus] = useState<FarcasterMiniAppStatus>({
     isAdded: false,
     notificationsEnabled: false,
@@ -164,6 +164,7 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
 
   useEffect(() => {
     let mounted = true;
+    const maxRetries = 3;
 
     async function initializeFarcasterSDK() {
       try {
@@ -173,8 +174,10 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
           return;
         }
 
-        // Dynamically import and initialize Farcaster SDK
+        // Dynamically import and initialize Farcaster SDK with retry logic
         const { sdk } = await import("@farcaster/miniapp-sdk");
+
+        // Initialize SDK with retry logic
         await sdk.actions.ready();
 
         if (mounted) {
@@ -243,11 +246,18 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
         }
       } catch (initError) {
         console.error("Failed to initialize Farcaster SDK:", initError);
+        if (mounted && retryCount < maxRetries) {
+          // Retry with progressive delay
+          setRetryCount((prev) => prev + 1);
+          setTimeout(() => initializeFarcasterSDK(), 500 + retryCount * 200);
+          return;
+        }
+
         if (mounted) {
           setError("Failed to initialize Farcaster authentication");
         }
       } finally {
-        if (mounted) {
+        if (mounted && (retryCount >= maxRetries || error || user)) {
           setIsLoading(false);
         }
       }
@@ -258,7 +268,8 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
     return () => {
       mounted = false;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryCount]);
 
   const contextValue: FarcasterContextValue = {
     sdk: sdkInstance,
@@ -272,7 +283,6 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
 
   return (
     <FarcasterContext.Provider value={contextValue}>
-      <FarcasterSDKInitializer />
       {children}
     </FarcasterContext.Provider>
   );

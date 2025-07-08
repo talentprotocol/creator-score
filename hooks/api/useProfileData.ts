@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { TalentProfile, ApiResponse } from "@/lib/types";
-import { CACHE_DURATIONS } from "@/lib/config";
+import { CACHE_DURATIONS } from "@/lib/utils/cache";
 
 export function useProfileData(identifier: string | null) {
   return useQuery({
